@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.ednovo.gooru.application.util.GooruImageUtil;
 import org.ednovo.gooru.application.util.SerializerUtil;
+import org.ednovo.gooru.application.util.TaxonomyUtil;
 import org.ednovo.gooru.core.api.model.Code;
 import org.ednovo.gooru.core.api.model.Collection;
 import org.ednovo.gooru.core.api.model.CollectionItem;
@@ -22,11 +23,14 @@ import org.ednovo.gooru.core.api.model.MetaConstants;
 import org.ednovo.gooru.core.api.model.Sharing;
 import org.ednovo.gooru.core.api.model.TaxonomyCourse;
 import org.ednovo.gooru.core.api.model.User;
+import org.ednovo.gooru.core.application.util.BaseUtil;
+import org.ednovo.gooru.core.constant.ConfigConstants;
 import org.ednovo.gooru.core.constant.ConstantProperties;
 import org.ednovo.gooru.core.constant.Constants;
 import org.ednovo.gooru.core.constant.ParameterProperties;
 import org.ednovo.gooru.domain.service.BaseServiceImpl;
 import org.ednovo.gooru.domain.service.TaxonomyCourseRepository;
+import org.ednovo.gooru.domain.service.setting.SettingService;
 import org.ednovo.gooru.infrastructure.messenger.IndexHandler;
 import org.ednovo.gooru.infrastructure.persistence.hibernate.CollectionDao;
 import org.ednovo.gooru.infrastructure.persistence.hibernate.content.ContentClassificationRepository;
@@ -57,10 +61,12 @@ public abstract class AbstractCollectionServiceImpl extends BaseServiceImpl impl
 	@Autowired
 	private TaxonomyCourseRepository taxonomyCourseRepository;
 
+	@Autowired
+	private SettingService settingService;
+
 	protected final static String TAXONOMY_COURSE = "taxonomyCourse";
-	
+
 	protected final static String DEPTHOF_KNOWLEDGE = "depthOfKnowledge";
-	
 
 	public Collection createCollection(Collection collection, User user) {
 		collection.setGooruOid(UUID.randomUUID().toString());
@@ -160,11 +166,13 @@ public abstract class AbstractCollectionServiceImpl extends BaseServiceImpl impl
 		}
 	}
 
-	public void resetSequence(String parentGooruOid, String gooruOid, Integer newSequence) {
-		List<CollectionItem> resetCollectionSequence = null;
-		int displaySequence;
-		CollectionItem collectionItem = this.getCollectionDao().getCollectionItem(parentGooruOid, gooruOid);
+	public void resetSequence(Collection parentCollection, String gooruOid, Integer newSequence) {
+		int max = this.getCollectionDao().getCollectionItemMaxSequence(parentCollection.getContentId());
+		reject((max > newSequence), GL0007, 404, ITEM_SEQUENCE);
+		CollectionItem collectionItem = this.getCollectionDao().getCollectionItem(parentCollection.getGooruOid(), gooruOid);
 		if (collectionItem != null) {
+			List<CollectionItem> resetCollectionSequence = null;
+			int displaySequence;
 			int oldSequence = collectionItem.getItemSequence();
 			if (newSequence > oldSequence) {
 				resetCollectionSequence = this.getCollectionDao().getCollectionItems(collectionItem.getCollection().getGooruOid(), oldSequence, newSequence);
@@ -221,13 +229,16 @@ public abstract class AbstractCollectionServiceImpl extends BaseServiceImpl impl
 		if (thumbnail != null) {
 			content.put(THUMBNAILS, GooruImageUtil.getThumbnails(thumbnail));
 		}
-		Object publishStatus = (Short) content.get(PUBLISH_STATUS);
+		Object publishStatus = content.get(PUBLISH_STATUS);
 		if (publishStatus != null) {
 			content.put(PUBLISH_STATUS, Constants.PUBLISH_STATUS.get(((Number) publishStatus).shortValue()));
 		}
+		content.put(USER, setUser(content.get(GOORU_UID), content.get(USER_NAME)));
 		content.remove(DATA);
 		content.remove(META_DATA);
 		content.remove(IMAGE_PATH);
+		content.remove(GOORU_UID);
+		content.remove(USER_NAME);
 		return content;
 	}
 
@@ -358,6 +369,14 @@ public abstract class AbstractCollectionServiceImpl extends BaseServiceImpl impl
 		return courses;
 	}
 
+	protected Map<String, Object> setUser(Object userUid, Object username) {
+		Map<String, Object> user = new HashMap<String, Object>();
+		user.put(GOORU_UID, userUid);
+		user.put(USER_NAME, username);
+		user.put(PROFILE_IMG_URL, BaseUtil.changeHttpsProtocolByHeader(getSettingService().getConfigSetting(ConfigConstants.PROFILE_IMAGE_URL, TaxonomyUtil.GOORU_ORG_UID)) + "/" + String.valueOf(user.get(GOORU_UID)) + ".png");
+		return user;
+	}
+
 	public CollectionDao getCollectionDao() {
 		return collectionDao;
 	}
@@ -380,6 +399,10 @@ public abstract class AbstractCollectionServiceImpl extends BaseServiceImpl impl
 
 	public TaxonomyCourseRepository getTaxonomyCourseRepository() {
 		return taxonomyCourseRepository;
+	}
+
+	public SettingService getSettingService() {
+		return settingService;
 	}
 
 }

@@ -172,14 +172,20 @@ public class ClassServiceImpl extends BaseServiceImpl implements ClassService, C
 
 	@Override
 	@Transactional(readOnly = true, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-	public List<Map<String, Object>> getMember(String classUid, int limit, int offset) {
+	public Map<String, Object> getMember(String classUid, int limit, int offset) {
 		final List<Map<String, Object>> members = this.getClassRepository().getMember(classUid, limit, offset);
-		final List<Map<String, Object>> userList = new ArrayList<Map<String, Object>>();
-		for (Map<String, Object> user : members) {
-			user.put(PROFILE_IMG_URL, BaseUtil.changeHttpsProtocolByHeader(settingService.getConfigSetting(ConfigConstants.PROFILE_IMAGE_URL, TaxonomyUtil.GOORU_ORG_UID)) + "/" + String.valueOf(user.get(GOORU_UID)) + ".png");
-			userList.add(user);
+		Map<String, Object> searchResults = new HashMap<String, Object>();
+		List<Map<String, Object>> memberList = new ArrayList<Map<String, Object>>();
+		Integer count = 0;
+		if (members != null && members.size() > 0) {
+			for (Map<String, Object> result : members) {
+				memberList.add(setClass(result));
+			}
+			count = this.getClassRepository().getMemeberCount(classUid);
 		}
-		return userList;
+		searchResults.put(TOTAL_HIT_COUNT, count);
+		searchResults.put(SEARCH_RESULT, memberList);
+		return searchResults;
 	}
 
 	@Override
@@ -273,6 +279,42 @@ public class ClassServiceImpl extends BaseServiceImpl implements ClassService, C
 		}
 	}
 
+	@Override
+	public List<Map<String, Object>> getClassUnit(String unitId, int limit, int offset) {
+		List<Map<String, Object>> units = getClassRepository().getCollectionItem(unitId, limit, offset);
+		List<Map<String, Object>> unitList = new ArrayList<Map<String, Object>>();
+		for (Map<String, Object> unit : units) {
+			unit.remove(CONTENT_ID);
+			unitList.add(unit);
+		}
+		return unitList;
+	}
+
+	@Override
+	public List<Map<String, Object>> getClassCollectionSettings(String classUid, String unitId, int limit, int offset) {
+		//Map<String, Object> data = this.getClassRepository().getClassCollectionSettings(null, classUid);
+		//System.out.println(data);
+//		List<Map<String, Object>> lessons = getClassRepository().getCollectionItem(unitId, limit, offset);
+//		List<Map<String, Object>> lessonList = new ArrayList<Map<String, Object>>();
+//		for (Map<String, Object> lesson : lessons) {
+//			Long contentId = ((Number) lesson.get(CONTENT_ID)).longValue();
+//	//		List<Map<String, Object>> classCollectionSettings = this.getClassRepository().getClassCollectionSettings(contentId, classUid);
+//			List<Map<String, Object>> collectionSettings = new ArrayList<Map<String, Object>>();
+//			for (Map<String, Object> collection : classCollectionSettings) {
+//				Object value = collection.get(VALUE);
+//				if (value != null) {
+//					collection.put(SETTINGS, JsonDeserializer.deserialize(String.valueOf(value), new TypeReference<Map<String, Object>>() {
+//					}));
+//				}
+//				collectionSettings.add(collection);
+//			}
+//			lesson.put(ITEMS, collectionSettings);
+//			lessonList.add(lesson);
+//		}
+		//return lessonList;
+		return null;
+	}
+
 	public CollectionDao getCollectionDao() {
 		return collectionDao;
 	}
@@ -296,5 +338,4 @@ public class ClassServiceImpl extends BaseServiceImpl implements ClassService, C
 	public GooruImageUtil getGooruImageUtil() {
 		return gooruImageUtil;
 	}
-
 }

@@ -23,12 +23,16 @@ public interface ClassService {
 
 	void deleteUserFromClass(String classUid, String userUid, User user);
 
-	List<Map<String, Object>> getMember(String classUid, int limit, int offset);
+	Map<String, Object> getMember(String classUid, int limit, int offset);
 
 	List<Map<String, Object>> getClassesByCourse(String courseGooruOid, int limit, int offset);
 
 	void deleteClass(String classUId, User user);
 
 	void joinClass(String classUid, User apiCaller);
-
+	
+	List<Map<String, Object>> getClassUnit(String gooruOid, int limit, int offset);
+	
+	List<Map<String, Object>> getClassCollectionSettings(String classUid, String lessonId, int limit, int offset);
+	
 }

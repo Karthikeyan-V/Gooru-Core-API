@@ -33,4 +33,9 @@ public interface ClassRepository extends BaseRepository {
 	
 	Integer getClassesCount(String gooruUid);
 	
+	Integer getMemeberCount(String classUid);
+	
+	List<Map<String, Object>> getCollectionItem(String gooruOid, int limit, int offset);
+	
+	Map<String, Object> getClassCollectionSettings(Long lessonId);
 }

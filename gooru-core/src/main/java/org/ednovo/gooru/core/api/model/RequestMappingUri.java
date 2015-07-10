@@ -32,7 +32,7 @@ public class RequestMappingUri {
 
 	public static final String LESSON_COLLECTION_ID = "/v1/course/{courseId}/unit/{unitId}/lesson/{lessonId}/collection/{id}";
 
-	public static final String TARGET_LESSON = "/course/{courseId}/targetUnit/{unitId}/targetLesson/{lessonId}";
+	public static final String TARGET_LESSON = "/v1/targetCourse/{courseId}/targetUnit/{unitId}/targetLesson/{lessonId}";
 
 	public static final String CREATE_QUESTION = "/id}/question";
 
@@ -69,15 +69,21 @@ public class RequestMappingUri {
 	public static final String TAXONOMY_COURSE_BY_SUBJECT = "/{id}/taxonomycourse";
 
 	public static final String DOMAIN_BY_TAXONOMY_COURSE = "/{id}/domain";
-
+	
 	public static final String COLLECTION_QUESTION_ID = "/{collectionId}/question/{id}";
 
 	public static final String COLLECTION_RESOURCE_ID = "/{collectionId}/resource/{id}";
 
 	public static final String COLLECTION_ITEM_ID = "/{collectionId}/item/{id}";
 
-	public static final String COLLECTION_QUESTION = "/{collectionId}/question";
+	public static final String COLLECTION_QUESTION = "/{id}/question";
 
-	public static final String COLLECTION_RESOURCE = "/{collectionId}/resource";
+	public static final String COLLECTION_RESOURCE = "/{id}/resource";
+	
+	public static final String SUBDOMAIN_STANDARDS = "/{id}/standards";
+	
+	public static final String CLASS_UNIT = "/{id}/course/{courseId}/unit";
+	
+	public static final String CLASS_UNIT_COLLECTION_SETTINGS = "/{id}/course/{courseId}/unit/{unitId}/lesson";
 
 }
