@@ -236,6 +236,7 @@ public class Constants implements ParameterProperties {
 	
 	public static final Short BUILD_IPAD_TYPE_ID = 77;
 	
+	public static final String WSFED_LOGIN = "/gooru-auth/wsfed/ednovo.org/login?";
 	
 	static {
 		Map<String, String> reindexType = new HashMap<String, String>();
